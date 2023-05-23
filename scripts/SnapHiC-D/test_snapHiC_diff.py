@@ -37,6 +37,10 @@ def main():
     
     b_ID, gID = get_ID(CHR,BINSIZE,SnapHiC_dir,genome)
     GAP=list(range(min_gap, max_gap))
+    print(f"b_ID\n{b_ID}")
+    print(f"gID\n{gID}")
+    print(f"GAP\n{GAP}")
+
     out = []
     final_out = []
     with concurrent.futures.ProcessPoolExecutor(max_worker) as executor:
@@ -55,13 +59,20 @@ def g_filter(x):
 def get_usize(GAP, ann_dir, dir_in_A, dir_in_B,b_ID,gID,BINSIZE):
     ann = pd.read_csv(ann_dir, header='infer', sep=' ', lineterminator='\n') 
     if(ann['group'][1] == "A"):
-        x = cool_to_coo(dir_in_A + ann['name'][1] ,BINSIZE)
-        #x = pd.read_csv(dir_in_A + ann['name'][1], header=None, sep="\t")
+        #x = cool_to_coo(dir_in_A + ann['name'][1] ,BINSIZE)
+        #x = pd.read_csv(dir_in_A + ann['name'][1], header=None, sep="\n")
+        x = pd.read_csv(dir_in_A + ann['name'][1], sep=",") # modified to be sep=',' rather than '\t'
     else:
-        x = cool_to_coo(dir_in_B + ann['name'][1] ,BINSIZE)
+        #x = cool_to_coo(dir_in_B + ann['name'][1] ,BINSIZE)
         #x = pd.read_csv(dir_in_B + ann['name'][1], header=None, sep="\n")
+        x = pd.read_csv(dir_in_B + ann['name'][1], sep=",") # modified to be sep=',' rather than '\t'
 
-    x.columns = ["chrnum", "from", "from.1", "chrnum.1", "to", "to.1", "value"]
+    #print(x)
+    #x.columns = ["chrnum", "from", "from.1", "chrnum.1", "to", "to.1", "value"]
+    # x['from'].astype('int')
+    # x['from.1'].astype('int')
+    # x['to'].astype('int')
+    # x['to.1'].astype('int')
     x[["from", "from.1", "to", "to.1"]] = x[["from", "from.1", "to", "to.1"]]/BINSIZE
 
     y = x[x['to']-x['from'] == GAP]
@@ -104,22 +115,26 @@ def rest_of_steps(GAP, chr_list, dir_in_B, dir_in_A, ann_dir, out_dir, b_ID, gID
     
     for ID in range(0, len(ann)):
         if(ann['group'][ID] == "A"):
-            #x = pd.read_csv(dir_in_A + ann['name'][ID], sep=",")
+            x = pd.read_csv(dir_in_A + ann['name'][ID], sep=",")
             #x = pd.read_csv(dir_in_A + ann['name'][ID], header=None, sep="\t")
-            x = cool_to_coo(dir_in_A + ann['name'][ID],BINSIZE)
+            #x = cool_to_coo(dir_in_A + ann['name'][ID],BINSIZE)
         else:
-            #x = pd.read_csv(dir_in_B + ann['name'][ID], sep=",")
+            x = pd.read_csv(dir_in_B + ann['name'][ID], sep=",")
             #x = pd.read_csv(dir_in_B + ann['name'][ID], header=None, sep="\t")
-            x = cool_to_coo(dir_in_B + ann['name'][ID],BINSIZE)
+            #x = cool_to_coo(dir_in_B + ann['name'][ID],BINSIZE)
             
 
         #x.columns = ["chrnum", "from", "from.1", "chrnum.1", "to", "to.1", "value"]
         x[["from", "from.1", "to", "to.1"]] = x[["from", "from.1", "to", "to.1"]]/BINSIZE
 
         y = x[x['to']-x['from'] == GAP]
+        print(x['to']-x['from'] )
         z = y[(~y['from'].isin(b_ID)) & (~y['to'].isin(b_ID))]
         u = z[(z['from'].isin(gID)) | (z['to'].isin(gID))]
 
+        #print((z['from'].isin(gID)) | (z['to'].isin(gID)))
+        
+        #print(u.shape)
         rec[:, ID] = u['value']
         
 
@@ -131,6 +146,7 @@ def rest_of_steps(GAP, chr_list, dir_in_B, dir_in_A, ann_dir, out_dir, b_ID, gID
 
     index = np.array([a or b for a, b in zip(countA, countB)]).astype(int)
     u_combine = np.c_[u[['from','from.1','to','to.1']], rec]
+    print(u_combine.shape)
     final = u_combine[index == 1, ]
     
     #print(final.size)

@@ -61,13 +61,13 @@ def get_usize(GAP, ann_dir, dir_in_A, dir_in_B,b_ID,gID,BINSIZE):
         x = cool_to_coo(dir_in_B + ann['name'][1] ,BINSIZE)
         #x = pd.read_csv(dir_in_B + ann['name'][1], header=None, sep="\n")
 
-    x.columns = ["chrnum", "from", "from.1", "chrnum.1", "to", "to.1", "value"]
+    #x.columns = ["chrnum", "from", "from.1", "chrnum.1", "to", "to.1", "value"]
     x[["from", "from.1", "to", "to.1"]] = x[["from", "from.1", "to", "to.1"]]/BINSIZE
 
     y = x[x['to']-x['from'] == GAP]
     z = y[(~y['from'].isin(b_ID)) & (~y['to'].isin(b_ID))]
     u = z[(z['from'].isin(gID)) | (z['to'].isin(gID))]
-
+    #print(f"-------usize------\nx\n{x}\ny\n{y}\nz\n{z}\nu\n{u}")
     u_size = u.shape[0]
     return u_size
 
@@ -103,6 +103,7 @@ def rest_of_steps(GAP, chr_list, dir_in_B, dir_in_A, ann_dir, out_dir, b_ID, gID
     
     
     for ID in range(0, len(ann)):
+        print(ID, len(ann))
         if(ann['group'][ID] == "A"):
             #x = pd.read_csv(dir_in_A + ann['name'][ID], sep=",")
             #x = pd.read_csv(dir_in_A + ann['name'][ID], header=None, sep="\t")
@@ -119,6 +120,10 @@ def rest_of_steps(GAP, chr_list, dir_in_B, dir_in_A, ann_dir, out_dir, b_ID, gID
         y = x[x['to']-x['from'] == GAP]
         z = y[(~y['from'].isin(b_ID)) & (~y['to'].isin(b_ID))]
         u = z[(z['from'].isin(gID)) | (z['to'].isin(gID))]
+        
+        #print(f"-------rest of steps------\nx\n{x}\ny\n{y}\nz\n{z}\nu\n{u}")
+        print(u_size, rec[:,ID].shape,  u["value"].shape)
+        #print(u["value"])
 
         rec[:, ID] = u['value']
         

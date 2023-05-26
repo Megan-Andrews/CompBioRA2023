@@ -4,50 +4,57 @@ import numpy as np
 import pandas as pd
 import cooler
 
+# Set the precision to display all decimal places
+np.set_printoptions(precision=16)
 
 # inputfile = sys.argv[1] 
 # outputfile = sys.argv[2] 
 
 def visualize_hic(inputfile, outputfile): 
-# Load Hi-C data from a text or CSV file using NumPy or Pandas
-# 'hic_data' should be a 2D numpy array or a pandas DataFrame
-#filepath = "/project/compbio-lab/scHi-C/Lee2019/Human_single_cell_10kb_cool/181218_21yr_2_A10_AD001_L23_10kb_contacts.cool"
-
-    filepath = inputfile #"/home/maa160/CompBioRA2023/tempData/imputed.cool"
+    filepath = inputfile
     c = cooler.Cooler(filepath)
-
-    #c.coarsen_cooler()
 
     # Get the contact matrix (e.g., for chromosome 1)
     chrom = "chr22"
-    # start = 0
-    # end = 2000000
     matrix = c.matrix(balance=False).fetch(f"{chrom}")
+    #print(np.float32(np.min(matrix)), np.float32(np.min(np.log1p(matrix))))
 
-    # log(M + 1) scale the image
+    # log(M + 1) scale the matrix
     matrix_log = np.log1p(matrix)
-    min_value = np.min(matrix_log)
-    max_value = np.max(matrix_log)
+    mean_value = np.mean(matrix_log)
+    std_dev = np.std(matrix_log)
 
-    # # Define the desired downsampling factor
-    # downsample_factor = 1
+    min_value = 0#0.0000001#np.finfo(np.float32).tiny * 2 #mean_value - 4 * std_dev# #smallest positive numpy.float64  #np.min(matrix_log)
+    max_value = np.max(matrix_log)/64
 
-    # # Downsample the matrix
-    # downsampled_matrix = matrix_log[::downsample_factor, ::downsample_factor]
+    #print(min_value, mean_value + 3 * std_dev, np.max(matrix_log)/64)
 
     # Clear the plot
     plt.clf()
 
+    # Create a discrete colormap with 10 colors
+    cmap = plt.get_cmap('tab20', 20)
+    
+    # Set the color for the exact zero values
+    #cmap.set_under("gray")  # Replace with your desired color for zero values
+
     # Create a heatmap plot
-    plt.imshow(matrix_log, cmap="hot", origin="lower", vmin=min_value, vmax=max_value)
+    plt.imshow(matrix_log, cmap=cmap, origin="lower", vmin=min_value, vmax=max_value)
 
     # Set the plot title and labels
     plt.title("Contact Matrix")
     plt.xlabel("Genomic Position")
     plt.ylabel("Genomic Position")
 
-    # Show the colorbar
-    plt.colorbar()
+    # Generate logarithmically spaced ticks for the colorbar
+    num_ticks = 20
+    log_ticks = np.logspace(min_value, max_value, num=num_ticks)
+
+    # Show the colorbar with logarithmic scale
+    cbar = plt.colorbar(ticks=log_ticks)
+    #cbar.set_label('Intensity')
+    cbar.ax.set_yticklabels(["{:.2e}".format(tick) for tick in log_ticks])
+
 
     # Show the heatmap
     plt.savefig(outputfile)

@@ -52,14 +52,21 @@ def g_filter(x):
     return counts
 
 
+"""
+get_usize expects all files from group A and B to be the same length
+for each GAP size, the output u_size should be the same for all input files,
+therefore, SnapHiC-d should not take a 7-column COO without the zero values on imput it needs to take the full sparse COO matrix. 
+"""
 def get_usize(GAP, ann_dir, dir_in_A, dir_in_B,b_ID,gID,BINSIZE):
     ann = pd.read_csv(ann_dir, header='infer', sep=' ', lineterminator='\n') 
     if(ann['group'][1] == "A"):
-        x = cool_to_coo(dir_in_A + ann['name'][1] ,BINSIZE)
-        #x = pd.read_csv(dir_in_A + ann['name'][1], header=None, sep="\t")
+        #print("A")
+        #x = cool_to_coo(dir_in_A + ann['name'][1] ,BINSIZE)
+        x = pd.read_csv(dir_in_A + ann['name'][1], sep="\t") #header=None,
     else:
-        x = cool_to_coo(dir_in_B + ann['name'][1] ,BINSIZE)
-        #x = pd.read_csv(dir_in_B + ann['name'][1], header=None, sep="\n")
+        #print("B")
+        #x = cool_to_coo(dir_in_B + ann['name'][1] ,BINSIZE)
+        x = pd.read_csv(dir_in_B + ann['name'][1], sep="\t") #header=None,
 
     #x.columns = ["chrnum", "from", "from.1", "chrnum.1", "to", "to.1", "value"]
     x[["from", "from.1", "to", "to.1"]] = x[["from", "from.1", "to", "to.1"]]/BINSIZE
@@ -69,7 +76,7 @@ def get_usize(GAP, ann_dir, dir_in_A, dir_in_B,b_ID,gID,BINSIZE):
     u = z[(z['from'].isin(gID)) | (z['to'].isin(gID))]
     #print(f"-------usize------\nx\n{x}\ny\n{y}\nz\n{z}\nu\n{u}")
     u_size = u.shape[0]
-    return u_size
+    return u_size, x.shape, y.shape, z.shape, u.shape 
 
 
 def get_ID(CHR,BINSIZE,SnapHiC_dir,genome):
@@ -98,22 +105,21 @@ def rest_of_steps(GAP, chr_list, dir_in_B, dir_in_A, ann_dir, out_dir, b_ID, gID
     num_A = sum(ann['group'] == "A")
     num_B = sum(ann['group'] == "B")
 
-    u_size = get_usize(GAP, ann_dir, dir_in_A, dir_in_B,b_ID,gID,BINSIZE)
+    u_size, x_shape, y_shape, z_shape, u_shape = get_usize(GAP, ann_dir, dir_in_A, dir_in_B,b_ID,gID,BINSIZE)
     rec = np.zeros((u_size, len(ann)))
     
-    
     for ID in range(0, len(ann)):
-        print(ID, len(ann))
         if(ann['group'][ID] == "A"):
+            #print("A")
             #x = pd.read_csv(dir_in_A + ann['name'][ID], sep=",")
-            #x = pd.read_csv(dir_in_A + ann['name'][ID], header=None, sep="\t")
-            x = cool_to_coo(dir_in_A + ann['name'][ID],BINSIZE)
+            x = pd.read_csv(dir_in_A + ann['name'][ID], sep="\t") #header=None,
+            #x = cool_to_coo(dir_in_A + ann['name'][ID],BINSIZE)
         else:
+            #print("B")
             #x = pd.read_csv(dir_in_B + ann['name'][ID], sep=",")
-            #x = pd.read_csv(dir_in_B + ann['name'][ID], header=None, sep="\t")
-            x = cool_to_coo(dir_in_B + ann['name'][ID],BINSIZE)
+            x = pd.read_csv(dir_in_B + ann['name'][ID], sep="\t") # header=None,
+            #x = cool_to_coo(dir_in_B + ann['name'][ID],BINSIZE)
             
-
         #x.columns = ["chrnum", "from", "from.1", "chrnum.1", "to", "to.1", "value"]
         x[["from", "from.1", "to", "to.1"]] = x[["from", "from.1", "to", "to.1"]]/BINSIZE
 
@@ -121,9 +127,11 @@ def rest_of_steps(GAP, chr_list, dir_in_B, dir_in_A, ann_dir, out_dir, b_ID, gID
         z = y[(~y['from'].isin(b_ID)) & (~y['to'].isin(b_ID))]
         u = z[(z['from'].isin(gID)) | (z['to'].isin(gID))]
         
+        # test_u_size = get_usize(GAP, ann_dir, dir_in_A, dir_in_B,b_ID,gID,BINSIZE)
         #print(f"-------rest of steps------\nx\n{x}\ny\n{y}\nz\n{z}\nu\n{u}")
-        print(u_size, rec[:,ID].shape,  u["value"].shape)
+        # print(u_size, test_u_size, rec[:,ID].shape,  u["value"].shape)
         #print(u["value"])
+        print(x.shape, x_shape, " - " ,y.shape, y_shape, " - ",z.shape, z_shape," - " , u.shape, u_shape)
 
         rec[:, ID] = u['value']
         

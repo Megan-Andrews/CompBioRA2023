@@ -173,6 +173,7 @@ def impute_chromosome(scool_url,
         'end': np.arange(resolution, num_bins * resolution + resolution, resolution)
     })
     coo_matrix = E.tocoo()
+    
     # Create DataFrame from the coo_matrix data
     pixels = pd.DataFrame({
         'bin1_id': coo_matrix.row,
@@ -186,7 +187,9 @@ def impute_chromosome(scool_url,
                         bins=bins, 
                         pixels=pixels,
                         ordered=True,
-                        dtypes={'count': np.float32})
+                        dtypes={'count': np.float32}) # TODO: should this be float32?
+    
+    ## Check if cool file looks correct
     #c= cooler.Cooler(output_path)
     #T = c.matrix(balance=False, sparse=True).fetch(chrom)
     #print(T)

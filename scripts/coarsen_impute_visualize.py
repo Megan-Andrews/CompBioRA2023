@@ -23,7 +23,7 @@ if not os.path.exists(image_directory_path):
     os.mkdir(image_directory_path)
 
 # create cool directory
-cool_directory_path = "/project/compbio-lab/100kb_imputed_cool/"+new_file_name
+cool_directory_path = "/project/compbio-lab/scHi-C/100kb_imputed_cool/"+new_file_name
 # Check if the directory exists
 if not os.path.exists(cool_directory_path):
     os.mkdir(cool_directory_path)
@@ -39,8 +39,8 @@ imputed_outpath = cool_directory_path+"/"+new_file_name+"_imputed.cool"
 
 # visualize coarsen impute
 visualize_hic(inpath, orig_img_outpath)
-coarsen(inpath, coarse_outpath)
+#coarsen(inpath, coarse_outpath)
 visualize_hic(coarse_outpath, coarse_img_outpath)
-impute(coarse_outpath, imputed_outpath)
+#impute(coarse_outpath, imputed_outpath)
 visualize_hic(imputed_outpath, imputed_img_outpath)
 

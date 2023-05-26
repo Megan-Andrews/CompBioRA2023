@@ -7,7 +7,7 @@
 SnapHiC_D_dir="/home/maa160/CompBioRA2023/scripts/SnapHiC-D"
 group_A_dir="/project/compbio-lab/100kb_imputed_cool/181218_21yr_2_A12_AD004_OPC_100kb_contacts/"
 group_B_dir="/project/compbio-lab/100kb_imputed_cool/181218_21yr_2_A12_AD006_MP_100kb_contacts/"
-file_list_dir="/project/compbio-lab/100kb_imputed_cool/181218_21yr_2_A12_AD006_MP_AD004_OPC_100kb_contacts_snap/file_list.txt"
+file_list_dir="/project/compbio-lab/100kb_imputed_cool/181218_21yr_2_A12_AD006_MP_AD004_OPC_100kb_contacts_snap/test_file_list.txt"
 out_dir="/project/compbio-lab/100kb_imputed_cool/181218_21yr_2_A12_AD006_MP_AD004_OPC_100kb_contacts_snap"
 chr="chr22"
 genome="hg19"
